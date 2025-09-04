@@ -24,6 +24,6 @@ public class Produtor {
 	@Column(nullable = false)
 	private String nome;
 	
-	//private Integer titulos;	
+	private Integer titulos;	
 
 }

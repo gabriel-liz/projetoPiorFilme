@@ -45,7 +45,7 @@ public class Filme {
 			name = "filme_studio",
 			joinColumns = @JoinColumn(name= "filme_id"),
 			inverseJoinColumns = @JoinColumn(name = "studio_id"))	
-	private List<Studio> studios;	
+	private List<Estudio> estudios;	
 	
 	private boolean premiado;
 	
