@@ -49,4 +49,12 @@ public class Filme {
 	
 	private boolean premiado;
 	
+	public boolean adicionarProdutor(Produtor produtor) {
+		return getProdutores().add(produtor);
+	}
+	
+	public boolean desassociarProdutor(Produtor produtor) {
+		return getProdutores().remove(produtor);
+	}
+	
 }
