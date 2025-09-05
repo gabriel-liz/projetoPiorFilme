@@ -8,6 +8,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.core.io.ClassPathResource;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.competicaoPiorFilme.api.model.IntervalorEntrePremiosResponseDTO;
@@ -19,6 +20,7 @@ import com.competicaoPiorFilme.domain.service.IntervaloEntrePremiosService;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @SpringBootTest
+@ActiveProfiles("test")
 @Transactional
 public class FilmeIntegrationTest {
 	@Autowired
@@ -64,9 +66,9 @@ public class FilmeIntegrationTest {
 
         // Validação de produtores específicos de acordo com CSV de teste
         assertThat(response.getMin().get(0).getProducer())
-                .isEqualTo("Joel Silver");
+                .isEqualTo("Produtor 2");
         assertThat(response.getMax().get(0).getProducer())
-                .isEqualTo("Matthew Vaughn");
+                .isEqualTo("Produtor 2");
 
         // Validação dos intervalos (exemplo: não negativo)
         assertThat(response.getMin().get(0).getInterval()).isGreaterThanOrEqualTo(0);
