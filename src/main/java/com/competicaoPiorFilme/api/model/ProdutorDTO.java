@@ -9,4 +9,5 @@ public class ProdutorDTO {
 	
 	private Long id;
 	private String nome;
+	private String premiado;
 }

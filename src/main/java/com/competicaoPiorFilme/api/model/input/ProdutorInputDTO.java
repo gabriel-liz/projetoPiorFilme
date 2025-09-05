@@ -11,4 +11,6 @@ public class ProdutorInputDTO {
 	
 	@NotBlank
 	private String nome;
+	
+	private boolean premiado;
 }

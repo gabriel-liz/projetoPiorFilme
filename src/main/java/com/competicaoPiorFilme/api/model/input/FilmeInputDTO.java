@@ -10,7 +10,7 @@ import lombok.Setter;
 public class FilmeInputDTO {
 	
 	private String titulo;
-	private Integer ano;
+	private Integer ano;	
 	private List<Long> produtoresIds;
 	private List<Long> estudiosIds;
 }

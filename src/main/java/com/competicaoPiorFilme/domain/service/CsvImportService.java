@@ -1,9 +1,12 @@
 package com.competicaoPiorFilme.domain.service;
 
 import java.io.BufferedReader;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
@@ -41,10 +44,15 @@ public class CsvImportService {
 	}
 
 	public void importarCsv(MultipartFile file) throws Exception {
-		try (BufferedReader fileReader = new BufferedReader(
-				new InputStreamReader(file.getInputStream(), StandardCharsets.UTF_8))) {
+		importarCsv(file.getInputStream());
+	}
 
-			CSVFormat format = CSVFormat.DEFAULT.builder()
+	public void importarCsv(InputStream inputStream) throws Exception {
+		try (BufferedReader fileReader = new BufferedReader(
+				new InputStreamReader(inputStream, StandardCharsets.UTF_8))) {
+
+			CSVFormat format = CSVFormat.DEFAULT
+					.builder()
 					.setHeader()
 					.setSkipHeaderRecord(true)
 					.setDelimiter(';')
@@ -52,54 +60,67 @@ public class CsvImportService {
 
 			try (CSVParser csvParser = new CSVParser(fileReader, format)) {
 				for (CSVRecord record : csvParser) {
-					Integer ano = Integer.valueOf(record.get("year").trim());
-					String titulo = record.get("title").trim();
-					String studiosStr = record.get("studios").trim();
-					String producersStr = record.get("producers").trim();
-
-					Optional<Filme> existente = filmeRepository.findByTituloAndAno(titulo, ano);
-					Filme filme = existente.orElseGet(() -> {
-						Filme novo = new Filme();
-						novo.setAno(ano);
-						novo.setTitulo(titulo);
-						return novo;
-					});
-
-					Set<Estudio> estudios = new HashSet<>();
-					for (String nomeEstudio : studiosStr.split(",")) {
-						String nome = nomeEstudio.trim();
-						if (nome.isEmpty())
-							continue;
-
-						Estudio estudio = estudioRepository.findByNome(nome)
-								.orElseGet(() -> {
-							Estudio novo = new Estudio();
-							novo.setNome(nome);
-							return estudioRepository.save(novo);
-						});
-						estudios.add(estudio);
-					}
-					filme.setEstudios(estudios);
-
-					Set<Produtor> produtores = new HashSet<>();
-					for (String nomeProdutor : producersStr.split(",")) {
-						String nome = nomeProdutor.trim();
-						if (nome.isEmpty())
-							continue;
-
-						Produtor produtor = produtorRepository.findByNome(nome)
-								.orElseGet(() -> {
-							Produtor novo = new Produtor();
-							novo.setNome(nome);
-							return produtorRepository.save(novo);
-						});
-						produtores.add(produtor);
-					}
-					filme.setProdutores(produtores);
-
-					filmeRepository.save(filme);
+					processarRegistros(record);
 				}
 			}
 		}
+	}
+
+	private List<String> splitNomes(String nomeStr) {
+		String normalizado = nomeStr.replaceAll(",\\s*and\\s*", ",");
+		return Arrays.stream(normalizado.split(",|\\band\\b"))
+				.map(String::trim)
+				.filter(nome -> !nome.isEmpty())
+				.toList();
+	}
+
+	private void processarRegistros(CSVRecord record) {
+		Integer ano = Integer.valueOf(record.get("year").trim());
+		String titulo = record.get("title").trim();
+		String studiosStr = record.get("studios").trim();
+		String producersStr = record.get("producers").trim();
+		String winnerStr = record.isMapped("winner") ? 
+				record.get("winner").trim() 
+				: "";
+		boolean premiado = "yes".equalsIgnoreCase(winnerStr);
+
+		Optional<Filme> existente = filmeRepository.findByTituloAndAno(titulo, ano);
+		Filme filme = existente.orElseGet(() -> {
+			Filme novo = new Filme();
+			novo.setAno(ano);
+			novo.setTitulo(titulo);
+			return novo;
+		});
+
+		Set<Estudio> estudios = new HashSet<>();
+		for (String nomeEstudio : splitNomes(studiosStr)) {
+			Estudio estudio = estudioRepository
+					.findByNome(nomeEstudio)
+					.orElseGet(() -> {
+				Estudio novo = new Estudio();
+				novo.setNome(nomeEstudio);
+				return estudioRepository.save(novo);
+			});
+			estudios.add(estudio);
+		}
+		filme.setEstudios(estudios);
+
+		Set<Produtor> produtores = new HashSet<>();
+		for (String nomeProdutor : splitNomes(producersStr)) {
+			Produtor produtor = produtorRepository.findByNome(nomeProdutor)
+					.orElseGet(() -> {
+				Produtor novo = new Produtor();
+				novo.setNome(nomeProdutor);
+				return produtorRepository.save(novo);
+			});
+			if (premiado) {
+				produtor.setPremiado(true);
+			}
+			produtores.add(produtor);
+		}
+		filme.setProdutores(produtores);
+
+		filmeRepository.save(filme);
+
 	}
 }

@@ -33,7 +33,7 @@ public class Filme {
 	private String titulo;
 	
 	@Column(nullable = false)
-	private int ano;
+	private int ano;	
 
 	@ManyToMany
 	@JoinTable(
@@ -48,8 +48,6 @@ public class Filme {
 			joinColumns = @JoinColumn(name= "filme_id"),
 			inverseJoinColumns = @JoinColumn(name = "studio_id"))	
 	private Set<Estudio> estudios = new HashSet<>();	
-	
-	private boolean premiado;
 	
 	public boolean adicionarProdutor(Produtor produtor) {
 		return getProdutores().add(produtor);
