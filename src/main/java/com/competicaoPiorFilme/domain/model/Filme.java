@@ -13,8 +13,11 @@ import javax.persistence.JoinTable;
 import javax.persistence.ManyToMany;
 import javax.validation.constraints.NotBlank;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.Setter;
 
 @Data
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
@@ -30,11 +33,10 @@ public class Filme {
 	@NotBlank
 	@Column(nullable = false)
 	private String titulo;
-	
 	@Column(nullable = false)
-	private int ano;	
-	
-	private String winner;
+	private int ano;
+
+	private boolean premiado;
 	 
 	@ManyToMany
 	@JoinTable(
@@ -48,10 +50,10 @@ public class Filme {
 			name = "filme_studio",
 			joinColumns = @JoinColumn(name= "filme_id"),
 			inverseJoinColumns = @JoinColumn(name = "studio_id"))	
-	private Set<Estudio> estudios = new HashSet<>();	
-	
-	public boolean isWinner() {
-        return winner != null && "yes".equalsIgnoreCase(winner.trim());
-    }
+	private Set<Estudio> estudios = new HashSet<>();
+
+	public boolean getPremiado() {
+		return premiado;
+	}
 	
 }

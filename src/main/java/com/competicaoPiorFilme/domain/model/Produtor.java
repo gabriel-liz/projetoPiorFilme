@@ -24,14 +24,6 @@ public class Produtor {
 	@Column(nullable = false)
 	private String nome;
 	
-	private Integer titulos;
-	
-	private boolean premiado;
-	
-	public boolean isPremiado() {
-		return premiado;
-	}
-	
-	
+	private Integer titulos;			
 
 }

@@ -27,7 +27,7 @@ public class IntervaloEntrePremiosService {
     public IntervalorEntrePremiosResponseDTO calcularIntervalorPremios() {
         // pega apenas os filmes vencedores
         List<Filme> filmesPremiados = filmeRepository.findAll().stream()
-                .filter(Filme::isWinner)
+                .filter(Filme::getPremiado)
                 .collect(Collectors.toList());
 
         // agrupa anos de vitória por produtor

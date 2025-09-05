@@ -11,6 +11,7 @@ public class FilmeInputDTO {
 	
 	private String titulo;
 	private Integer ano;	
+	private boolean premiado;
 	private List<Long> produtoresIds;
 	private List<Long> estudiosIds;
 }

@@ -28,6 +28,7 @@ public class FilmeDTOAssembler {
 		dto.setId(filme.getId());
 		dto.setTitulo(filme.getTitulo());
 		dto.setAno(filme.getAno());
+		dto.setPremiado(filme.getPremiado());
 		dto.setProdutores(filme.getProdutores()
 				.stream()
 				.map(produtorAssembler::toDTO)

@@ -11,7 +11,7 @@ public class FilmeDTO {
 	
 	private Long id;
 	private String titulo;
-	private boolean winner;
+	private boolean premiado;
 	private Integer ano;	
 	private List<ProdutorDTO> produtores;
 	private List<EstudioDTO> estudios;
