@@ -1,6 +1,8 @@
 package com.competicaoPiorFilme.domain.model;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -38,14 +40,14 @@ public class Filme {
 			name = "filmeProdutor",
 			joinColumns = @JoinColumn(name = "filme_id"),
 			inverseJoinColumns = @JoinColumn(name= "produtor_id"))
-	private List<Produtor> produtores;
+	private Set<Produtor> produtores = new HashSet<>();
 	
 	@ManyToMany
 	@JoinTable(
 			name = "filme_studio",
 			joinColumns = @JoinColumn(name= "filme_id"),
 			inverseJoinColumns = @JoinColumn(name = "studio_id"))	
-	private List<Estudio> estudios;	
+	private Set<Estudio> estudios = new HashSet<>();	
 	
 	private boolean premiado;
 	

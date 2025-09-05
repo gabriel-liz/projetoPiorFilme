@@ -3,8 +3,9 @@ package com.competicaoPiorFilme.domain.service;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Optional;
+import java.util.Set;
 
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
@@ -30,7 +31,7 @@ public class CsvImportService {
 	private ProdutorRepository produtorRepository;
 
 	@Autowired
-	private EstudioRepository estudioRepository;	
+	private EstudioRepository estudioRepository;
 
 	public CsvImportService(FilmeRepository filmeRepository, ProdutorRepository produtorRepository,
 			EstudioRepository estudioRepository) {
@@ -41,55 +42,64 @@ public class CsvImportService {
 
 	public void importarCsv(MultipartFile file) throws Exception {
 		try (BufferedReader fileReader = new BufferedReader(
-				new InputStreamReader(file.getInputStream(), StandardCharsets.UTF_8));
-				CSVParser csvParser = new CSVParser(fileReader,
-						CSVFormat.DEFAULT.withFirstRecordAsHeader().withDelimiter(';'))) {
+				new InputStreamReader(file.getInputStream(), StandardCharsets.UTF_8))) {
 
-			for (CSVRecord record : csvParser) {
-				Integer ano = Integer.valueOf(record.get("year").trim());
-				String titulo = record.get("title").trim();
-				String estudiosStr = record.get("studios").trim();
-				String producersStr = record.get("producers").trim();
-				
-				Filme filme = new Filme();
-				filme.setAno(ano);
-				filme.setTitulo(titulo);
+			CSVFormat format = CSVFormat.DEFAULT.builder()
+					.setHeader()
+					.setSkipHeaderRecord(true)
+					.setDelimiter(';')
+					.build();
 
-				List<Estudio> estudios = new ArrayList<>();
-				for (String nomeEstudio : estudiosStr.split(",")) {
-					String nome = nomeEstudio.trim();
-					if (nome.isEmpty())
-						continue;
+			try (CSVParser csvParser = new CSVParser(fileReader, format)) {
+				for (CSVRecord record : csvParser) {
+					Integer ano = Integer.valueOf(record.get("year").trim());
+					String titulo = record.get("title").trim();
+					String studiosStr = record.get("studios").trim();
+					String producersStr = record.get("producers").trim();
 
-					Estudio estudio = estudioRepository.findByNome(nome).orElseGet(() -> {
-						Estudio novo = new Estudio();
-						novo.setNome(nome);
-						return estudioRepository.save(novo);
+					Optional<Filme> existente = filmeRepository.findByTituloAndAno(titulo, ano);
+					Filme filme = existente.orElseGet(() -> {
+						Filme novo = new Filme();
+						novo.setAno(ano);
+						novo.setTitulo(titulo);
+						return novo;
 					});
-					estudios.add(estudio);
+
+					Set<Estudio> estudios = new HashSet<>();
+					for (String nomeEstudio : studiosStr.split(",")) {
+						String nome = nomeEstudio.trim();
+						if (nome.isEmpty())
+							continue;
+
+						Estudio estudio = estudioRepository.findByNome(nome)
+								.orElseGet(() -> {
+							Estudio novo = new Estudio();
+							novo.setNome(nome);
+							return estudioRepository.save(novo);
+						});
+						estudios.add(estudio);
+					}
+					filme.setEstudios(estudios);
+
+					Set<Produtor> produtores = new HashSet<>();
+					for (String nomeProdutor : producersStr.split(",")) {
+						String nome = nomeProdutor.trim();
+						if (nome.isEmpty())
+							continue;
+
+						Produtor produtor = produtorRepository.findByNome(nome)
+								.orElseGet(() -> {
+							Produtor novo = new Produtor();
+							novo.setNome(nome);
+							return produtorRepository.save(novo);
+						});
+						produtores.add(produtor);
+					}
+					filme.setProdutores(produtores);
+
+					filmeRepository.save(filme);
 				}
-				filme.setEstudios(estudios);
-				
-				List<Produtor> produtores = new ArrayList<>();
-				for(String nomeProdutor : producersStr.split(",")) {
-					String nome = nomeProdutor.trim();
-					if(nome.isEmpty()) continue;
-					
-					Produtor produtor = produtorRepository.findByNome(nome).orElseGet(() -> {
-						Produtor novo = new Produtor();
-						novo.setNome(nome);						
-						return produtorRepository.save(novo);
-					});
-					produtores.add(produtor);
-				}
-				filme.setProdutores(produtores);		
-				
-				filmeRepository.save(filme);
-				
 			}
-
 		}
-
 	}
-
 }
