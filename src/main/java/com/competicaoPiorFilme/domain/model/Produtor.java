@@ -27,5 +27,11 @@ public class Produtor {
 	private Integer titulos;
 	
 	private boolean premiado;
+	
+	public boolean isPremiado() {
+		return premiado;
+	}
+	
+	
 
 }

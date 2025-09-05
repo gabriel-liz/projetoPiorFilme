@@ -12,74 +12,80 @@ import org.springframework.stereotype.Service;
 import com.competicaoPiorFilme.api.model.IntervaloEntrePremiosDTO;
 import com.competicaoPiorFilme.api.model.IntervalorEntrePremiosResponseDTO;
 import com.competicaoPiorFilme.domain.model.Filme;
-import com.competicaoPiorFilme.domain.model.Produtor;
 import com.competicaoPiorFilme.domain.repository.FilmeRepository;
 
 @Service
 public class IntervaloEntrePremiosService {
 
-	@Autowired
-	private FilmeRepository filmeRepository;
+    @Autowired
+    private FilmeRepository filmeRepository;
 
-	public IntervaloEntrePremiosService(FilmeRepository filmeRepository) {
-		this.filmeRepository = filmeRepository;
-	}
+    public IntervaloEntrePremiosService(FilmeRepository filmeRepository) {
+        this.filmeRepository = filmeRepository;
+    }
 
-	public IntervalorEntrePremiosResponseDTO calcularIntervalorPremios() {
-		List<Filme> filmesPremiados = filmeRepository.findAll().stream()
-				.filter(f -> f.getProdutores() != null && f.getProdutores()
-				.stream()
-				.anyMatch(Produtor::isPremiado))
-				.collect(Collectors.toList());
+    public IntervalorEntrePremiosResponseDTO calcularIntervalorPremios() {
+        // pega apenas os filmes vencedores
+        List<Filme> filmesPremiados = filmeRepository.findAll().stream()
+                .filter(Filme::isWinner)
+                .collect(Collectors.toList());
 
-		Map<String, List<Integer>> premiosPorProdutor = filmesPremiados.stream()
-				.flatMap(f -> f.getProdutores()
-						.stream()
-						.filter(Produtor::isPremiado)
-						.map(p -> new Object[] { p.getNome(), f.getAno() }))
-				.collect(Collectors.groupingBy(obj -> (String) obj[0],
-						Collectors.mapping(obj -> (Integer) obj[1], Collectors.toList())));
+        // agrupa anos de vitória por produtor
+        Map<String, List<Integer>> premiosPorProdutor = filmesPremiados.stream()
+                .flatMap(f -> f.getProdutores()
+                        .stream()
+                        .map(p -> new Object[] { p.getNome(), f.getAno() }))
+                .collect(Collectors.groupingBy(
+                        obj -> (String) obj[0],
+                        Collectors.mapping(obj -> (Integer) obj[1], Collectors.toList())
+                ));
 
-		List<IntervaloEntrePremiosDTO> intervalos = new ArrayList<>();
+        List<IntervaloEntrePremiosDTO> intervalos = new ArrayList<>();
 
-		for (Map.Entry<String, List<Integer>> entry : premiosPorProdutor.entrySet()) {
-			String produtor = entry.getKey();
-			List<Integer> anos = entry.getValue();
-			if (anos.size() < 2)
-				continue;
+        // calcula intervalos por produtor
+        for (Map.Entry<String, List<Integer>> entry : premiosPorProdutor.entrySet()) {
+            String produtor = entry.getKey();
+            List<Integer> anos = entry.getValue();
 
-			Collections.sort(anos);
+            if (anos.size() < 2) continue;
 
-			for (int i = 1; i < anos.size(); i++) {
-				int intervalo = anos.get(i) - anos.get(i - 1);
-				intervalos.add(new IntervaloEntrePremiosDTO(produtor, intervalo, anos.get(i - 1), anos.get(i)));
-			}
-		}
+            Collections.sort(anos);
 
-		if (intervalos.isEmpty()) {
-			return new IntervalorEntrePremiosResponseDTO(List.of(), List.of());
-		}
+            for (int i = 1; i < anos.size(); i++) {
+                int intervalo = anos.get(i) - anos.get(i - 1);
+                intervalos.add(new IntervaloEntrePremiosDTO(
+                        produtor,
+                        intervalo,
+                        anos.get(i - 1),
+                        anos.get(i)
+                ));
+            }
+        }
 
-		int minIntervalo = intervalos.stream()
-				.mapToInt(IntervaloEntrePremiosDTO::getInterval)
-				.min()
-				.orElse(0);
-		int maxIntervalo = intervalos.stream().
-				mapToInt(IntervaloEntrePremiosDTO::getInterval)
-				.max()
-				.orElse(0);
+        if (intervalos.isEmpty()) {
+            return new IntervalorEntrePremiosResponseDTO(List.of(), List.of());
+        }
 
-		List<IntervaloEntrePremiosDTO> min = intervalos
-				.stream()
-				.filter(i -> i.getInterval() == minIntervalo)
-				.collect(Collectors.toList());
+        // menor intervalo
+        int minIntervalo = intervalos.stream()
+                .mapToInt(IntervaloEntrePremiosDTO::getInterval)
+                .min()
+                .orElse(0);
 
-		List<IntervaloEntrePremiosDTO> max = intervalos
-				.stream()
-				.filter(i -> i.getInterval() == maxIntervalo)
-				.collect(Collectors.toList());
+        // maior intervalo
+        int maxIntervalo = intervalos.stream()
+                .mapToInt(IntervaloEntrePremiosDTO::getInterval)
+                .max()
+                .orElse(0);
 
-		return new IntervalorEntrePremiosResponseDTO(min, max);
-	}
+        List<IntervaloEntrePremiosDTO> min = intervalos.stream()
+                .filter(i -> i.getInterval() == minIntervalo)
+                .collect(Collectors.toList());
 
+        List<IntervaloEntrePremiosDTO> max = intervalos.stream()
+                .filter(i -> i.getInterval() == maxIntervalo)
+                .collect(Collectors.toList());
+
+        return new IntervalorEntrePremiosResponseDTO(min, max);
+    }
 }

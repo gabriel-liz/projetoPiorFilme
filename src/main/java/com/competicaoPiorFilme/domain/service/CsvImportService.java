@@ -103,6 +103,9 @@ public class CsvImportService {
 			});
 			estudios.add(estudio);
 		}
+		String winnerRaw = record.get("winner").trim();
+		filme.setWinner(winnerRaw.isEmpty() ? null : winnerRaw);
+		
 		filme.setEstudios(estudios);
 
 		Set<Produtor> produtores = new HashSet<>();

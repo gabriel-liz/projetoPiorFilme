@@ -1,7 +1,6 @@
 package com.competicaoPiorFilme.domain.model;
 
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 import javax.persistence.Column;
@@ -34,7 +33,9 @@ public class Filme {
 	
 	@Column(nullable = false)
 	private int ano;	
-
+	
+	private String winner;
+	 
 	@ManyToMany
 	@JoinTable(
 			name = "filmeProdutor",
@@ -49,12 +50,8 @@ public class Filme {
 			inverseJoinColumns = @JoinColumn(name = "studio_id"))	
 	private Set<Estudio> estudios = new HashSet<>();	
 	
-	public boolean adicionarProdutor(Produtor produtor) {
-		return getProdutores().add(produtor);
-	}
-	
-	public boolean desassociarProdutor(Produtor produtor) {
-		return getProdutores().remove(produtor);
-	}
+	public boolean isWinner() {
+        return winner != null && "yes".equalsIgnoreCase(winner.trim());
+    }
 	
 }
