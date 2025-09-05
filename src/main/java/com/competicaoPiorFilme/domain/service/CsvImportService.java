@@ -111,11 +111,11 @@ public class CsvImportService {
 					.orElseGet(() -> {
 				Produtor novo = new Produtor();
 				novo.setNome(nomeProdutor);
+				if (premiado) {
+					novo.setPremiado(true);
+				}
 				return produtorRepository.save(novo);
-			});
-			if (premiado) {
-				produtor.setPremiado(true);
-			}
+			});			
 			produtores.add(produtor);
 		}
 		filme.setProdutores(produtores);
