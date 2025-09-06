@@ -13,11 +13,11 @@ import java.util.Set;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVRecord;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.competicaoPiorFilme.domain.exception.CsvValidationException;
 import com.competicaoPiorFilme.domain.model.Estudio;
 import com.competicaoPiorFilme.domain.model.Filme;
 import com.competicaoPiorFilme.domain.model.Produtor;
@@ -27,15 +27,13 @@ import com.competicaoPiorFilme.domain.repository.ProdutorRepository;
 
 @Service
 public class CsvImportService {
-
-	@Autowired
-	private FilmeRepository filmeRepository;
-
-	@Autowired
-	private ProdutorRepository produtorRepository;
-
-	@Autowired
-	private EstudioRepository estudioRepository;
+	
+	private static final List<String> CABECALHO_ESPERADO = List.of("year", "title", "studios", "producers", "winner");
+	
+	
+	 private final FilmeRepository filmeRepository;
+	 private final ProdutorRepository produtorRepository;
+	 private final EstudioRepository estudioRepository;
 
 	public CsvImportService(FilmeRepository filmeRepository, ProdutorRepository produtorRepository,
 			EstudioRepository estudioRepository) {
@@ -45,6 +43,7 @@ public class CsvImportService {
 	}
 
 	public void importarCsv(MultipartFile file) throws Exception {
+		validarArquivo(file);
 		importarCsv(file.getInputStream());
 	}
 	
@@ -61,10 +60,15 @@ public class CsvImportService {
 					.build();
 
 			try (CSVParser csvParser = new CSVParser(fileReader, format)) {
-				for (CSVRecord record : csvParser) {
+				validarCabecalho(csvParser.getHeaderNames());
+				for (CSVRecord record : csvParser) {					
 					processarRegistros(record);
 				}
-			}
+			} 
+		}catch (CsvValidationException e) {
+			throw e;
+		} catch (Exception e) {
+			throw new CsvValidationException("Erro ao processar o arquivo CSV: " + e.getMessage());
 		}
 	}
 
@@ -122,5 +126,27 @@ public class CsvImportService {
 		filme.setPremiado(premiado);
 	    filmeRepository.save(filme);
 	}
+	
+    private void validarArquivo(MultipartFile file) {
+        if (file == null || file.isEmpty()) {
+            throw new CsvValidationException("Nenhum arquivo foi enviado.");
+        }
+
+        if (!file.getOriginalFilename().toLowerCase().endsWith(".csv")) {
+            throw new CsvValidationException("O arquivo enviado não é um .csv válido.");
+        }
+    }
+    
+    private void validarCabecalho(List<String> cabecalho) {
+        if (cabecalho.size() != CABECALHO_ESPERADO.size()) {
+            throw new CsvValidationException("Cabeçalho do CSV inválido. Esperado: " + CABECALHO_ESPERADO);
+        }
+
+        for (int i = 0; i < cabecalho.size(); i++) {
+            if (!cabecalho.get(i).trim().equalsIgnoreCase(CABECALHO_ESPERADO.get(i))) {
+                throw new CsvValidationException("Cabeçalho inválido. Esperado: " + CABECALHO_ESPERADO);
+            } 
+        }
+    }     
 
 }

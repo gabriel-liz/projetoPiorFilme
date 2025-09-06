@@ -22,8 +22,7 @@ public class Produtor {
 	
 	@NotBlank
 	@Column(nullable = false)
-	private String nome;
-	
-	private Integer titulos;			
+	private String nome;			
 
 }
+  
