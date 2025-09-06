@@ -1,4 +1,4 @@
-package com.competicaoPiorFilme.domain.service;
+package com.competicaoPiorFilme.domain.service.importacaobasededados;
 
 import java.io.BufferedReader;
 import java.io.InputStream;

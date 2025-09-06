@@ -1,4 +1,4 @@
-package com.competicaoPiorFilme.core.modelMapper;
+package com.competicaoPiorFilme.core.modelmapper;
 
 import org.modelmapper.ModelMapper;
 import org.springframework.context.annotation.Bean;

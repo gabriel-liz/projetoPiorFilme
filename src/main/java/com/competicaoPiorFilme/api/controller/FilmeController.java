@@ -15,8 +15,8 @@ import com.competicaoPiorFilme.api.model.FilmeDTO;
 import com.competicaoPiorFilme.api.model.IntervalorEntrePremiosResponseDTO;
 import com.competicaoPiorFilme.domain.model.Filme;
 import com.competicaoPiorFilme.domain.repository.FilmeRepository;
-import com.competicaoPiorFilme.domain.service.CsvImportService;
 import com.competicaoPiorFilme.domain.service.IntervaloEntrePremiosService;
+import com.competicaoPiorFilme.domain.service.importacaobasededados.CsvImportService;
 
 import lombok.RequiredArgsConstructor;
 

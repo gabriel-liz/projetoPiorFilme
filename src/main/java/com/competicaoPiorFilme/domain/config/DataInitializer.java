@@ -7,7 +7,7 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Component;
 
-import com.competicaoPiorFilme.domain.service.CsvImportService;
+import com.competicaoPiorFilme.domain.service.importacaobasededados.CsvImportService;
 
 @Component
 public class DataInitializer implements CommandLineRunner {

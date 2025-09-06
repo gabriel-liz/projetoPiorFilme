@@ -14,8 +14,8 @@ import org.springframework.transaction.annotation.Transactional;
 import com.competicaoPiorFilme.api.model.IntervalorEntrePremiosResponseDTO;
 import com.competicaoPiorFilme.domain.model.Filme;
 import com.competicaoPiorFilme.domain.repository.FilmeRepository;
-import com.competicaoPiorFilme.domain.service.CsvImportService;
 import com.competicaoPiorFilme.domain.service.IntervaloEntrePremiosService;
+import com.competicaoPiorFilme.domain.service.importacaobasededados.CsvImportService;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
